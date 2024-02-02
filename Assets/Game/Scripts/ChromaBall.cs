@@ -43,6 +43,10 @@ public class ChromaBall : MonoBehaviour
                 GetComponent<Renderer>().material = otherChromaTransfer.colorToTransfer;
                 GetComponent<ChromaTransfer>().colorToTransfer = otherChromaTransfer.colorToTransfer;
                 GetComponent<ChromaTransfer>().ownerID = otherChromaTransfer.ownerID;
+                if (otherChromaTransfer.colorToTransfer.HasProperty("_Color"))
+                {
+                    GetComponent<Light>().color = otherChromaTransfer.colorToTransfer.color;
+                }
             }
         }
     }

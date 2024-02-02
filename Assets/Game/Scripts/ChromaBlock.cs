@@ -8,15 +8,27 @@ public class ChromaBlock : MonoBehaviour
     public float spreadRadius = 3f;
     string ownerID = null;
     MeshRenderer colorRenderer;
+    Light chromaLight;
+    Color defaultLightColor = new(0.009951297f, 0.3137255f, 0f);
     // Start is called before the first frame update
     void Start()
     {
         colorRenderer = GetComponentInChildren<MeshRenderer>();
+        chromaLight = GetComponentInChildren<Light>();
     }
 
     public void HitBlock(string hittingPlayerID, Material color, Boolean canSpread = true)
     {
         colorRenderer.material = color;
+        if (color.HasProperty("_Color"))
+        {
+            chromaLight.color = color.color;
+        } 
+        else 
+        {
+            chromaLight.color = defaultLightColor;
+        }
+        
         if (hittingPlayerID == ownerID && canSpread)
         {
             SpreadColor();
