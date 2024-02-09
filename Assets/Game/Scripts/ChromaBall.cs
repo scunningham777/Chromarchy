@@ -1,18 +1,30 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using MoreMountains.Tools;
+using Unity.VisualScripting;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 public class ChromaBall : MonoBehaviour
 {
     public float speed = 5f;
+    public ParticleSystem hitParticles;
+    public ParticleSystem colorChangeParticles;
     Rigidbody rb;
+    Renderer ballRenderer;
+    ChromaTransfer chromaTransfer;
+    Light ballLight;
 
     // Start is called before the first frame update
     private void Start()
     {
-        Vector2 velocity2d = Random.insideUnitCircle.normalized * speed;
         rb = GetComponent<Rigidbody>();
+        ballRenderer = GetComponent<Renderer>();
+        chromaTransfer = GetComponent<ChromaTransfer>();
+        ballLight = GetComponent<Light>();
+
+        Vector2 velocity2d = UnityEngine.Random.insideUnitCircle.normalized * speed;
         rb.velocity = new Vector3(velocity2d.x, 0, velocity2d.y);
     }
 
@@ -26,9 +38,9 @@ public class ChromaBall : MonoBehaviour
         ChromaBlock chromaBlock = collision.gameObject.GetComponent<ChromaBlock>();
         if (chromaBlock != null)
         {
-            ChromaTransfer chromaTransfer = GetComponent<ChromaTransfer>();
             chromaBlock.HitBlock(chromaTransfer.ownerID, chromaTransfer.colorToTransfer);
             MMGameEvent.Trigger("ChromaBlockColorChange");
+            hitParticles.Play();
         }
     }
 
@@ -37,22 +49,47 @@ public class ChromaBall : MonoBehaviour
         if (other.gameObject.layer == LayerMask.NameToLayer("ChromaSword"))
         {
             Reflect(rb, other.transform.forward);
+            colorChangeParticles.transform.forward = other.transform.forward;
             ChromaTransfer otherChromaTransfer = other.GetComponentInParent<ChromaTransfer>();
-            if (otherChromaTransfer != null && otherChromaTransfer.colorToTransfer != null)
+            if (otherChromaTransfer != null && otherChromaTransfer.colorToTransfer != null && otherChromaTransfer.ownerID != chromaTransfer.ownerID)
             {
-                GetComponent<Renderer>().material = otherChromaTransfer.colorToTransfer;
-                GetComponent<ChromaTransfer>().colorToTransfer = otherChromaTransfer.colorToTransfer;
-                GetComponent<ChromaTransfer>().ownerID = otherChromaTransfer.ownerID;
-                if (otherChromaTransfer.colorToTransfer.HasProperty("_Color"))
-                {
-                    GetComponent<Light>().color = otherChromaTransfer.colorToTransfer.color;
-                }
+                transferColor(otherChromaTransfer);
             }
         }
     }
 
+    private void transferColor(ChromaTransfer newData)
+    {
+        ballRenderer.material = newData.colorToTransfer;
+        chromaTransfer = newData;
+        if (newData.colorToTransfer.HasProperty("_Color"))
+        {
+            ballLight.color = newData.colorToTransfer.color;
+            ballLight.intensity = 2f;
+            
+            var particlesRenderer = colorChangeParticles.GetComponent<ParticleSystemRenderer>();
+            particlesRenderer.trailMaterial = newData.colorToTransfer;
+            colorChangeParticles.Play();
+        }
+
+    }
+
     private void Reflect(Rigidbody rb, Vector3 reflectVector)
     {
-        rb.velocity = Vector3.Reflect(rb.velocity, reflectVector);
+        // Get the current velocity
+        Vector3 currentVelocity = rb.velocity;
+
+        // Generate a small random vector
+        Vector3 randomVector = new Vector3(
+            UnityEngine.Random.Range(-1f, 1f),
+            0,
+            UnityEngine.Random.Range(-1f, 1f)
+        );
+
+        // Normalize and scale the random vector
+        randomVector = randomVector.normalized * .05f;
+
+        // Add the random vector to the current velocity
+        rb.velocity = Vector3.Reflect(currentVelocity + randomVector, reflectVector);
     }
 }

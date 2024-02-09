@@ -109,7 +109,7 @@ MonoBehaviour:
   MeleeDamageAreaMode: 0
   DamageAreaShape: 2
   AreaOffset: {x: -0.5, y: 0, z: 0}
-  AreaSize: {x: 3, y: 2, z: 2}
+  AreaSize: {x: 3, y: 2, z: 3}
   TriggerFilter: 195
   HitDamageableFeedback: {fileID: 0}
   HitNonDamageableFeedback: {fileID: 0}
