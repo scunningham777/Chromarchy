@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using MoreMountains.Tools;
 using Unity.VisualScripting;
 using UnityEditor.SceneManagement;
@@ -11,6 +12,7 @@ public class ChromaBall : MonoBehaviour
     public float speed = 5f;
     public ParticleSystem hitParticles;
     public ParticleSystem colorChangeParticles;
+    public MMFeedbacks colorChangeFeedback;
     Rigidbody rb;
     Renderer ballRenderer;
     ChromaTransfer chromaTransfer;
@@ -70,6 +72,7 @@ public class ChromaBall : MonoBehaviour
             var particlesRenderer = colorChangeParticles.GetComponent<ParticleSystemRenderer>();
             particlesRenderer.trailMaterial = newData.colorToTransfer;
             colorChangeParticles.Play();
+            colorChangeFeedback.PlayFeedbacks();
         }
 
     }
